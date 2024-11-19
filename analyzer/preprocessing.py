@@ -8,12 +8,12 @@ def debris_removal(data, fsc_threshold=500, ssc_threshold=500):
     Removes debris based on forward scatter (FSC) and side scatter (SSC) thresholds.
 
     Parameters:
-        data (df): Data parsed from a FCS file
+        data (pd.DataFrame): Data parsed from a FCS file
         fsc_threshold (int): Set to 500, sets the lower bound of forward scatter area for cells
         ssc_threshold (int): Set to 500, sets the lower bound of side scatter area for cells
 
     Returns:
-        data (df): Updated dataframe with cells with forward and side scatter below the threshold removed
+        data (pd.DataFrame): Updated dataframe with cells with forward and side scatter below the threshold removed
     """
     return data[(data['FSC-A'] > fsc_threshold) & (data['SSC-A'] > ssc_threshold)]
 
@@ -22,12 +22,13 @@ def remove_dead(data, threshold=1500):
     Removes dead cells based on viability data. 
 
     Parameters: 
-        data (df): Data parsed from a FCS file
+        data (pd.DataFrame): Data parsed from a FCS file
         threshold (int): Set to 1500, sets lower bound for viability of cells to be classified as living
 
     Returns:
-        df: Updated dataframe with remaining cells above the threshold
+        pd.DataFrame: Updated dataframe with remaining cells above the threshold
     """
+    # TODO: check if viability column exists 
     return data[data['Viability'] > threshold]
 
 def normalize(data, method='zscore'):
@@ -35,13 +36,13 @@ def normalize(data, method='zscore'):
     Normalizees data using the specified method.
     
     Parameters: 
-        data (df): Data parsed from a FCS file
+        data (pd.DataFrame): Data parsed from a FCS file
         method (str): Method used to normalize data
             - 'zscore': Standardize to mean=0, std=1
             - 'minmax': Scale to range [0,1]
 
     Returns:
-        data (df): Normalized dataframe
+        data (pd.DataFrame): Normalized dataframe
     """
     if method == 'zscore':
         return (data - data.mean()) / data.std()
@@ -57,13 +58,13 @@ def remove_outliers(data, method='zscore', threshold=3):
     Remove outliers using the specified method.
 
     Parameters: 
-        data (df): Data parsed from a FCS file
+        data (pd.DataFrame): Data parsed from a FCS file
         method (str):
             - 'zscore': Exclude points where |z| > threshold
             - 'iqr': Exclude points outside 1.5*IQR
 
     Returns:
-        data (df): Updated dataframe with outliers removed
+        data (pd.DataFrame): Updated dataframe with outliers removed
     """
     if method == 'zscore':
         z_scores = (data - data.mean()) / data.std()
@@ -83,12 +84,12 @@ def preprocess_pipeline(data, steps, **kwargs):
     Apply preprocessing steps to flow cytometry data.
 
     Parameters:
-        data (df): Data parsed from a FCS file
+        data (pd.DataFrame): Data parsed from a FCS file
         steps (list): List of preprocessing functions to apply
         kwargs (dict): Additional arguments for each function
 
     Returns:
-        df: Preprocessed data
+        pd.DataFrame: Preprocessed data
     """
     for step in steps: 
         func = step['function']

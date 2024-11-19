@@ -9,7 +9,7 @@ def fcs_parser(fcs_filepath):
 
     Returns: 
         metadata (dict): Metadata
-        data (df): Flow cytometry event data
+        data (pd.DataFrame): Flow cytometry event data
     """
     meta, data = fcsparser.parse(fcs_filepath, reformat_meta=True)
 
