@@ -1,4 +1,5 @@
 import fcsparser
+import os
 
 def fcs_parser(fcs_filepath):
     """
@@ -10,7 +11,17 @@ def fcs_parser(fcs_filepath):
     Returns: 
         metadata (dict): Metadata
         data (pd.DataFrame): Flow cytometry event data
+
+    Raises:
+        FileNotFoundError: If the file does not exist at the given path
+        ValueError: If the file is not the correct format or is corrupted
     """
+    if not os.path.exists(fcs_filepath):
+        raise FileNotFoundError(f"The file at '{fcs_filepath}' does not exist.")
+    
+    if not fcs_filepath.lower().endswith('.fcs'):
+        raise ValueError(f"File at '{fcs_filepath}' not of the .fcs format.")
+    
     meta, data = fcsparser.parse(fcs_filepath, reformat_meta=True)
 
     return meta, data

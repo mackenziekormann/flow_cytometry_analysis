@@ -1,7 +1,4 @@
-import pandas as pd 
 from parser import fcs_parser
-import numpy as np
-import matplotlib.pyplot as plt
 
 def debris_removal(data, fsc_threshold=500, ssc_threshold=500):
     """
@@ -27,8 +24,13 @@ def remove_dead(data, threshold=1500):
 
     Returns:
         pd.DataFrame: Updated dataframe with remaining cells above the threshold
+
+    Raises: 
+        KeyError: If 'Viability' column is missing
     """
-    # TODO: check if viability column exists 
+    if 'Viability' not in data.columns:
+        raise KeyError("Viability column not found in the data.")
+    
     return data[data['Viability'] > threshold]
 
 def normalize(data, method='zscore'):
@@ -78,6 +80,38 @@ def remove_outliers(data, method='zscore', threshold=3):
     
     else:
         raise ValueError("Unsupported method. Supported methods are 'zscore' and 'iqr'.")
+    
+def remove_doublets(data):
+    """
+    Removes doublets from flow cytometry data using FSC-H and SSC-H columns.
+    Doublets are events with disproportionately high height compared to area.
+
+    Parameters:
+        data (pd.DataFrame): Flow cytometry data.
+
+    Returns:
+        pd.DataFrame: DataFrame with doublets removed, or the original DataFrame if height columns are missing.
+
+    Raises: 
+        KeyError: If FCS or SSC height columns not found
+    """
+    if 'FSC-H' not in data.columns or 'SSC-H' not in data.columns:
+        raise KeyError("One or more height columns not found.")
+    
+    data['FSC_Ratio'] = data['FSC-H'] / data['FSC-A']
+    data['SSC_Ratio'] = data['SSC-H'] / data['SSC-A']
+
+    fsc_lower, fsc_upper = 0.8, 1.2
+    ssc_lower, ssc_upper = 0.8, 1.2
+
+    filtered_data = data[
+        (data['FSC_Ratio'] >= fsc_lower) & (data['FSC_Ratio'] <= fsc_upper) &
+        (data['SSC_Ratio'] >= ssc_lower) & (data['SSC_Ratio'] <= ssc_upper)
+    ]
+
+    filtered_data = filtered_data.drop(columns=['FSC_Ratio', 'SSC_Ratio'])
+    return filtered_data
+
     
 def preprocess_pipeline(data, steps, **kwargs):
     """
